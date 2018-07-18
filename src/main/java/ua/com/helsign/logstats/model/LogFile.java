@@ -4,4 +4,5 @@ import java.util.Map;
 
 public class LogFile {
     private Map<LogRecord, String> file;
+
 }
