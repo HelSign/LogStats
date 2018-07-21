@@ -4,7 +4,7 @@ public class LogRecord {
     private String data;
     private String className;
     private String severity;
-
+    private String classAndSeverity;
 
     public String getData() {
         return data;
@@ -28,5 +28,13 @@ public class LogRecord {
 
     public void setSeverity(String severity) {
         this.severity = severity;
+    }
+
+    public String getClassAndSeverity() {
+        return classAndSeverity;
+    }
+
+    public void setClassAndSeverity(String classAndSeverity) {
+        this.classAndSeverity = classAndSeverity;
     }
 }

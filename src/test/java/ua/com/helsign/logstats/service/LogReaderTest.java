@@ -4,55 +4,77 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-
 import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
-import java.nio.file.attribute.FileAttribute;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 
 class LogReaderTest {
-    private String testFile = "resources/sqlcmd.log";
+    private String bigFile = "resources/sqlcmd.log";
+    private String smallFile = "resources/test.log";
 
     @BeforeEach
     void setUp() throws IOException {
-        Files.deleteIfExists(Paths.get("resources/test.log"));
-        createTestFile("resources/test.log");
+        Files.deleteIfExists(Paths.get(smallFile));
+        createTestFile(smallFile);
     }
 
     @AfterEach
     void tearDown() throws IOException {
-        Files.deleteIfExists(Paths.get("resources/test.log"));
-
+        Files.deleteIfExists(Paths.get(smallFile));
     }
 
     @Test
     void shouldNotFindFile() {
         LogReader logReader = new LogReader();
-        assertThrows(NoSuchFileException.class, () -> logReader.readData("/" + testFile));
+        assertThrows(NoSuchFileException.class, () -> logReader.readData("/" + bigFile));
     }
 
     @Test
     void shouldFindFile() throws IOException {
         LogReader logReader = new LogReader();
-        logReader.readData(testFile);
+        logReader.readData(bigFile);
     }
 
     @Test
-    void shouldReadFile() throws IOException {
+    void shouldReadSmallFile() throws IOException {
         LogReader logReader = new LogReader();
-        logReader.readData("resources/test.log");
+        logReader.readData(smallFile);
+    }
+
+    @Test
+    void shouldReadData() throws IOException {
+        LogReader logReader = new LogReader();
+        logReader.readData(smallFile);
+        List<String> actual = logReader.getLogData();
+        List<String> expected = getExpectedList();
+        assertEquals(expected, actual);
+    }
+
+    @Test
+    void shouldCountRecords() throws IOException {
+        LogReader logReader = new LogReader();
+        logReader.readData(smallFile);
+        logReader.countRecords();
+        Map<String, Long> actual = logReader.getStatistic();
+        Map<String, Long> expected = getExpectedMap();
+        assertEquals(expected, actual);
     }
 
     private void createTestFile(String fileName) throws IOException {
         Charset charset = Charset.forName("UTF-8");
-        Path file = Files.createFile(Paths.get("resources/test.log"));
+        Path file = Files.createFile(Paths.get(fileName));
         String s = getTestString();
         try (BufferedWriter writer = Files.newBufferedWriter(file, charset)) {
             writer.write(s, 0, s.length());
@@ -72,5 +94,32 @@ class LogReaderTest {
                 "2018-07-12 15:11:32,462 DEBUG ua.com.juja.cmd.model.JDBCManager SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'\n" +
                 "2018-07-12 15:11:35,644 WARN ua.com.juja.cmd.model.JDBCManager !!!!DROP TABLE public.dsdsdsd\n" +
                 "2018-07-12 15:11:35,691 DEBUG ua.com.juja.cmd.model.JDBCManager SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'\n";
+    }
+
+    private Map<String, Long> getExpectedMap() {
+        Map<String, Long> expected = new HashMap<>();
+        expected.put("org.sprin.conte.suppo.AbstractApplicationContext/DEBUG", Long.valueOf(1));
+        expected.put("ua.com.juja.cmd.model.JDBCManager/DEBUG", Long.valueOf(4));
+        expected.put("org.sprin.beans.facto.suppo.DefaultListableBeanFactory/DEBUG", Long.valueOf(1));
+        expected.put("org.sprin.conte.suppo.AbstractApplicationContext/DEBUG", Long.valueOf(1));
+        expected.put("org.sprin.ui.conte.suppo.UiApplicationContextUtils/DEBUG", Long.valueOf(1));
+        expected.put("org.sprin.beans.facto.suppo.AbstractBeanFactory/DEBUG", Long.valueOf(2));
+        expected.put("ua.com.juja.cmd.model.JDBCManager/WARN", Long.valueOf(1));
+        return expected;
+    }
+
+    private List<String> getExpectedList() {
+        List<String> expected = new ArrayList<String>();
+        expected.add("org.sprin.conte.suppo.AbstractApplicationContext/DEBUG");
+        expected.add("org.sprin.ui.conte.suppo.UiApplicationContextUtils/DEBUG");
+        expected.add("org.sprin.beans.facto.suppo.DefaultListableBeanFactory/DEBUG");
+        expected.add("org.sprin.beans.facto.suppo.AbstractBeanFactory/DEBUG");
+        expected.add("org.sprin.beans.facto.suppo.AbstractBeanFactory/DEBUG");
+        expected.add("ua.com.juja.cmd.model.JDBCManager/DEBUG");
+        expected.add("ua.com.juja.cmd.model.JDBCManager/DEBUG");
+        expected.add("ua.com.juja.cmd.model.JDBCManager/DEBUG");
+        expected.add("ua.com.juja.cmd.model.JDBCManager/WARN");
+        expected.add("ua.com.juja.cmd.model.JDBCManager/DEBUG");
+        return expected;
     }
 }

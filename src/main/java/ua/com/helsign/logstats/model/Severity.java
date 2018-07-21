@@ -5,7 +5,7 @@ public enum Severity {
     ALERT,
     CRITICAL,
     ERROR,
-    WARNING,
+    WARN,
     NOTICE,
     INFO,
     DEBUG
