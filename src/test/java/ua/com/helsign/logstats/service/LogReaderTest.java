@@ -38,25 +38,29 @@ class LogReaderTest {
     @Test
     void shouldNotFindFile() {
         LogReader logReader = new LogReader();
-        assertThrows(NoSuchFileException.class, () -> logReader.readData("/" + bigFile));
+        logReader.setFileName("/" + bigFile);
+        assertThrows(NoSuchFileException.class, () -> logReader.readData());
     }
 
     @Test
     void shouldFindFile() throws IOException {
         LogReader logReader = new LogReader();
-        logReader.readData(bigFile);
+        logReader.setFileName(bigFile);
+        logReader.readData();
     }
 
     @Test
     void shouldReadSmallFile() throws IOException {
         LogReader logReader = new LogReader();
-        logReader.readData(smallFile);
+        logReader.setFileName(smallFile);
+        logReader.readData();
     }
 
     @Test
     void shouldReadData() throws IOException {
         LogReader logReader = new LogReader();
-        logReader.readData(smallFile);
+        logReader.setFileName(smallFile);
+        logReader.readData();
         List<String> actual = logReader.getLogData();
         List<String> expected = getExpectedList();
         assertEquals(expected, actual);
@@ -65,11 +69,21 @@ class LogReaderTest {
     @Test
     void shouldCountRecords() throws IOException {
         LogReader logReader = new LogReader();
-        logReader.readData(smallFile);
+        logReader.setFileName(smallFile);
+        logReader.readData();
         logReader.countRecords();
         Map<String, Long> actual = logReader.getStatistic();
         Map<String, Long> expected = getExpectedMap();
         assertEquals(expected, actual);
+    }
+
+    @Test
+    void shouldWriteFile() throws IOException {
+        LogReader logReader = new LogReader();
+        logReader.setFileName(smallFile);
+        logReader.readData();
+        logReader.countRecords();
+        logReader.writeStatistic();
     }
 
     private void createTestFile(String fileName) throws IOException {
@@ -98,28 +112,27 @@ class LogReaderTest {
 
     private Map<String, Long> getExpectedMap() {
         Map<String, Long> expected = new HashMap<>();
-        expected.put("org.sprin.conte.suppo.AbstractApplicationContext/DEBUG", Long.valueOf(1));
-        expected.put("ua.com.juja.cmd.model.JDBCManager/DEBUG", Long.valueOf(4));
-        expected.put("org.sprin.beans.facto.suppo.DefaultListableBeanFactory/DEBUG", Long.valueOf(1));
-        expected.put("org.sprin.conte.suppo.AbstractApplicationContext/DEBUG", Long.valueOf(1));
-        expected.put("org.sprin.ui.conte.suppo.UiApplicationContextUtils/DEBUG", Long.valueOf(1));
-        expected.put("org.sprin.beans.facto.suppo.AbstractBeanFactory/DEBUG", Long.valueOf(2));
-        expected.put("ua.com.juja.cmd.model.JDBCManager/WARN", Long.valueOf(1));
+        expected.put("org.sprin.conte.suppo.AbstractApplicationContext,DEBUG", Long.valueOf(1));
+        expected.put("ua.com.juja.cmd.model.JDBCManager,DEBUG", Long.valueOf(4));
+        expected.put("org.sprin.beans.facto.suppo.DefaultListableBeanFactory,DEBUG", Long.valueOf(1));
+        expected.put("org.sprin.ui.conte.suppo.UiApplicationContextUtils,DEBUG", Long.valueOf(1));
+        expected.put("org.sprin.beans.facto.suppo.AbstractBeanFactory,DEBUG", Long.valueOf(2));
+        expected.put("ua.com.juja.cmd.model.JDBCManager,WARN", Long.valueOf(1));
         return expected;
     }
 
     private List<String> getExpectedList() {
         List<String> expected = new ArrayList<String>();
-        expected.add("org.sprin.conte.suppo.AbstractApplicationContext/DEBUG");
-        expected.add("org.sprin.ui.conte.suppo.UiApplicationContextUtils/DEBUG");
-        expected.add("org.sprin.beans.facto.suppo.DefaultListableBeanFactory/DEBUG");
-        expected.add("org.sprin.beans.facto.suppo.AbstractBeanFactory/DEBUG");
-        expected.add("org.sprin.beans.facto.suppo.AbstractBeanFactory/DEBUG");
-        expected.add("ua.com.juja.cmd.model.JDBCManager/DEBUG");
-        expected.add("ua.com.juja.cmd.model.JDBCManager/DEBUG");
-        expected.add("ua.com.juja.cmd.model.JDBCManager/DEBUG");
-        expected.add("ua.com.juja.cmd.model.JDBCManager/WARN");
-        expected.add("ua.com.juja.cmd.model.JDBCManager/DEBUG");
+        expected.add("org.sprin.conte.suppo.AbstractApplicationContext,DEBUG");
+        expected.add("org.sprin.ui.conte.suppo.UiApplicationContextUtils,DEBUG");
+        expected.add("org.sprin.beans.facto.suppo.DefaultListableBeanFactory,DEBUG");
+        expected.add("org.sprin.beans.facto.suppo.AbstractBeanFactory,DEBUG");
+        expected.add("org.sprin.beans.facto.suppo.AbstractBeanFactory,DEBUG");
+        expected.add("ua.com.juja.cmd.model.JDBCManager,DEBUG");
+        expected.add("ua.com.juja.cmd.model.JDBCManager,DEBUG");
+        expected.add("ua.com.juja.cmd.model.JDBCManager,DEBUG");
+        expected.add("ua.com.juja.cmd.model.JDBCManager,WARN");
+        expected.add("ua.com.juja.cmd.model.JDBCManager,DEBUG");
         return expected;
     }
 }
