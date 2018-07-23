@@ -11,7 +11,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.RecursiveAction;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,19 +28,15 @@ public class LogReader {
         statistic = new HashMap<>();
         addLogger();
     }
+
     public void readData() throws IOException {
         Path path = FileSystems.getDefault().getPath(fileName);
         LOGGER.log(Level.INFO, "path=" + path.toAbsolutePath());
-        Scanner scanner = null;
-        try {
-            scanner = new Scanner(Files.newBufferedReader(path.toAbsolutePath())).useDelimiter("\r");
+        try (Scanner scanner = new Scanner(Files.newBufferedReader(path.toAbsolutePath())).useDelimiter("\r")) {
             while (scanner.hasNextLine()) {
                 filterData(scanner);
                 scanner.nextLine();
             }
-        } finally {
-            if (scanner != null)
-                scanner.close();
         }
     }
 
@@ -56,12 +51,13 @@ public class LogReader {
         String severityLogRecord = scanner.findInLine("\\w++\\s");
         String classLogRecord = scanner.findInLine("[\\w.]++\\s");
 
-        if (dataLogRecord != null && severityLogRecord != null && classLogRecord != null) {
-            severityLogRecord = severityLogRecord.trim();
-            for (Severity severity : Severity.values()) {
-                if (severity.name().equals(severityLogRecord)) {
-                    logData.add(String.format("%s,%s", classLogRecord.trim(), severityLogRecord));
-                }
+        if (dataLogRecord == null || severityLogRecord == null || classLogRecord == null)
+            return;
+        severityLogRecord = severityLogRecord.trim();
+        classLogRecord = classLogRecord.trim();
+        for (Severity severity : Severity.values()) {
+            if (severity.name().equals(severityLogRecord)) {
+                logData.add(String.format("%s,%s", classLogRecord, severityLogRecord));
             }
         }
     }
@@ -71,7 +67,6 @@ public class LogReader {
         Map<String, Long> counted = logData.stream().collect(Collectors.groupingBy(o -> o, Collectors.counting()));
         counted.forEach((record, count) -> statistic.put(record, count));
         statistic.forEach((record, count) -> System.out.println(record + "=" + count));
-
     }
 
     public void writeStatistic() throws IOException {
@@ -88,7 +83,6 @@ public class LogReader {
                     e.printStackTrace();
                 }
             });
-
         }
     }
 

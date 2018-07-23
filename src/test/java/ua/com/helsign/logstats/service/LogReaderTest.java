@@ -18,6 +18,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 class LogReaderTest {
@@ -84,6 +85,8 @@ class LogReaderTest {
         logReader.readData();
         logReader.countRecords();
         logReader.writeStatistic();
+        Path path = Paths.get(smallFile);
+        assertTrue(Files.exists(path));
     }
 
     private void createTestFile(String fileName) throws IOException {

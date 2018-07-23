@@ -17,6 +17,7 @@ public class App {
         logReader.setFileName("resources/sqlcmd.log");
         logReader.readData();
         logReader.countRecords();
+        logReader.writeStatistic();
        /* ForkJoinPool commonPool = ForkJoinPool.commonPool();
         commonPool.execute(logReader.com);
         ExecutorService executorService = Executors.newFixedThreadPool(10);
