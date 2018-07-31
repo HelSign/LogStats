@@ -1,6 +1,5 @@
 package ua.com.helsign.logstats.service;
 
-
 import ua.com.helsign.logstats.model.Severity;
 
 import java.util.ArrayList;
@@ -13,30 +12,28 @@ import java.util.stream.Collectors;
 
 public class LogReader extends RecursiveTask<List<String>> {
 
-    List<String> logData;
-    List<String> statistic;
-    private String fileName;
-    private int lengthLogData;
-    private int threshold = 100;
+    private List<String> logData;
+    private List<String> statistic;
+    private int threshold = 50;
     private int start;
 
-    public LogReader(List<String> logData) {
+    private LogReader(List<String> logData) {
         this.logData = logData;
     }
 
     @Override
     protected List<String> compute() {
-        statistic = new LinkedList<>();
-        lengthLogData = logData.size();
-        if (lengthLogData < threshold)
+        statistic = new ArrayList<>();
+        int lengthLogData = logData.size();
+        if (lengthLogData < threshold) {
             return filterData();
-
+        }
         int split = lengthLogData / 2;
         List<RecursiveTask> tasks = new LinkedList<>();
         LogReader task1 = new LogReader(logData.subList(start, split));
         tasks.add(task1);
         task1.fork();
-        LogReader task2 = new LogReader(logData.subList(start + split, lengthLogData - split));
+        LogReader task2 = new LogReader(logData.subList(split + 1, lengthLogData));
         tasks.add(task2);
         task2.fork();
 
@@ -44,27 +41,31 @@ public class LogReader extends RecursiveTask<List<String>> {
             statistic.addAll(joinTask.join());
         }
         return statistic;
-        // invokeAll(new LogReader(logData.subList(0,split)), new LogReader(logData.subList(0,split)) );
     }
 
     public static List<String> getData(List<String> dataFromFile) {
+        List<String> finalStatistic = new ArrayList<>();
         LogReader logReader = new LogReader(dataFromFile);
         ForkJoinPool pool = new ForkJoinPool();
-
-        return pool.invoke(logReader);
-    }
-
-    public List<String> filterData() {
-        statistic = new ArrayList<>();
-        logData.stream().map(this::helper)
-                .filter(this::compareSeverity)
+        List<String> statistic = pool.invoke(logReader);
+        System.out.println("number of elements =" + statistic.size());
+        statistic.stream()
                 .collect(Collectors.groupingBy(o -> o, Collectors.counting()))
-                .forEach((str, l) -> statistic.add(str + "->" + "" + l));
-        return statistic;
+                .forEach((record, number) -> finalStatistic.add(record + "," + number));
+        System.out.println("final =" + finalStatistic.size());
+        return finalStatistic;
     }
 
-    private String helper(String record) {
-        Scanner scanner = new Scanner(record);
+    private List<String> filterData() {
+        List<String> filteredData = logData.stream()
+                .map(this::splitLine)
+                .filter(this::checkSeverity)
+                .collect(Collectors.toList());
+        return filteredData;
+    }
+
+    private String splitLine(String line) {
+        Scanner scanner = new Scanner(line);
         String dataLogRecord = scanner.findInLine("[\\d-\\s\\d:,]++");
         String severityLogRecord = scanner.findInLine("\\w++\\s");
         String classLogRecord = scanner.findInLine("[\\w.]++\\s");
@@ -73,7 +74,7 @@ public class LogReader extends RecursiveTask<List<String>> {
         } else return "";
     }
 
-    private boolean compareSeverity(String value) {
+    private boolean checkSeverity(String value) {
         if (value == null)
             return false;
         for (Severity severity : Severity.values()) {

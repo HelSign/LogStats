@@ -10,8 +10,7 @@ import java.util.List;
 
 public class Statistic {
 
-
-    public void writeStatistic(List<String> statistic, String fileName) throws IOException {
+    public static void writeStatistic(List<String> statistic, String fileName) throws IOException {
         Path path = Paths.get(fileName);
         Files.deleteIfExists(path);
         Path resultFile = Files.createFile(path);

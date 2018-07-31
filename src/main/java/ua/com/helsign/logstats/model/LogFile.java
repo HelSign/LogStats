@@ -9,20 +9,20 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class LogFile {
-    private final List<String> file;
+    private final List<String> fileLines;
 
     LogFile(List<String> file) {
-        this.file = file;
+        this.fileLines = file;
     }
 
-    public List<String> getFile() {
-        return file;
+    public List<String> getFileLines() {
+        return fileLines;
     }
 
     public static LogFile readData(String fileName) throws IOException {
         Path path = FileSystems.getDefault().getPath(fileName);
         BufferedReader reader = Files.newBufferedReader(path.toAbsolutePath());
-        List<String> file = reader.lines().collect(Collectors.toList());
-        return new LogFile(file);
+        List<String> fileLines = reader.lines().collect(Collectors.toList());
+        return new LogFile(fileLines);
     }
 }

@@ -8,5 +8,6 @@ public enum Severity {
     WARN,
     NOTICE,
     INFO,
-    DEBUG
+    DEBUG,
+    TRACE
 }
