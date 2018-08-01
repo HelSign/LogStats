@@ -21,8 +21,10 @@ public class LogFile {
 
     public static LogFile readData(String fileName) throws IOException {
         Path path = FileSystems.getDefault().getPath(fileName);
-        BufferedReader reader = Files.newBufferedReader(path.toAbsolutePath());
-        List<String> fileLines = reader.lines().collect(Collectors.toList());
+        List<String> fileLines;
+        try(BufferedReader reader = Files.newBufferedReader(path.toAbsolutePath())) {
+          fileLines = reader.lines().collect(Collectors.toList());
+        }
         return new LogFile(fileLines);
     }
 }
