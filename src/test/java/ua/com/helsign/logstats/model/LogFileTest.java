@@ -3,7 +3,6 @@ package ua.com.helsign.logstats.model;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import ua.com.helsign.logstats.model.LogFile;
 
 import java.io.BufferedWriter;
 import java.io.IOException;

@@ -14,7 +14,7 @@ public class LogReader extends RecursiveTask<List<String>> {
 
     private List<String> logData;
     private List<String> statistic;
-    private int threshold = 50;
+    private int threshold = 5;
     private int start;
 
     private LogReader(List<String> logData) {
@@ -28,11 +28,15 @@ public class LogReader extends RecursiveTask<List<String>> {
         if (lengthLogData < threshold) {
             return filterData();
         }
+
         int split = lengthLogData / 2;
+
         List<RecursiveTask> tasks = new LinkedList<>();
+        System.out.println("start=" + start + "; split=" + split);
         LogReader task1 = new LogReader(logData.subList(start, split));
         tasks.add(task1);
         task1.fork();
+        System.out.println("split+1=" + (split + 1) + ", lengthLogData=" + lengthLogData);
         LogReader task2 = new LogReader(logData.subList(split + 1, lengthLogData));
         tasks.add(task2);
         task2.fork();
@@ -57,11 +61,10 @@ public class LogReader extends RecursiveTask<List<String>> {
     }
 
     private List<String> filterData() {
-        List<String> filteredData = logData.stream()
+        return logData.stream()
                 .map(this::splitLine)
                 .filter(this::checkSeverity)
                 .collect(Collectors.toList());
-        return filteredData;
     }
 
     private String splitLine(String line) {
